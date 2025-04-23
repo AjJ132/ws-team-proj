@@ -13,7 +13,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { cn } from "@/lib/utils";
 import Image from 'next/image';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { toast } from "sonner";
 import { Button } from '@/components/ui/button';
 
@@ -35,8 +35,6 @@ const RegisterPage = () => {
   const [authError, setAuthError] = useState<string | null>(null);
   const { register, isLoading: isAuthLoading, user, isInitialized } = useAuth();
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const redirectTo = searchParams.get('redirectTo') || '/dashboard';
 
   useEffect(() => {
     setMounted(true);
@@ -48,9 +46,9 @@ const RegisterPage = () => {
   // Redirect if already authenticated
   useEffect(() => {
     if (isInitialized && user) {
-      router.push(redirectTo);
+      router.push('/dashboard');
     }
-  }, [isInitialized, user, router, redirectTo]);
+  }, [isInitialized, user, router]);
 
   const form = useForm<z.infer<typeof registerSchema>>({
     resolver: zodResolver(registerSchema),
@@ -74,8 +72,8 @@ const RegisterPage = () => {
           description: "Your account has been created successfully.",
         });
         
-        // Redirect to dashboard or the originally requested page
-        router.push(redirectTo);
+        // Redirect to dashboard
+        router.push('/dashboard');
       } else {
         setAuthError(result.error || "Registration failed. Please try again.");
         toast("Registration Error", {

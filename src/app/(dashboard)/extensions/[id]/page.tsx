@@ -20,15 +20,15 @@ import {
 } from '@/components/ui/tabs';
 import { ChevronLeft, Edit, Download } from 'lucide-react';
 
-interface ExtensionDetailPageProps {
-  params: {
-    id: string;
-  };
-}
 
-export async function generateMetadata({ params }: ExtensionDetailPageProps): Promise<Metadata> {
+type Props = {
+  params: Promise<{ id: string }>;
+};
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const id = (await params).id;
   try {
-    const extensionResponse = await getExtension(params.id);
+    const extensionResponse = await getExtension(id);
     
     return {
       title: `${extensionResponse.data.name} | Extension Repository`,
@@ -43,11 +43,12 @@ export async function generateMetadata({ params }: ExtensionDetailPageProps): Pr
   }
 }
 
-export default async function ExtensionDetailPage({ params }: ExtensionDetailPageProps) {
+export default async function ExtensionDetailPage({ params }: Props) {
+  const id = (await params).id;
   let extension;
   
   try {
-    const response = await getExtension(params.id);
+    const response = await getExtension(id);
     extension = response.data;
   } catch (error) {
     console.error('Error fetching extension:', error);

@@ -13,7 +13,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { cn } from "@/lib/utils";
 import Image from 'next/image';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { toast } from "sonner";
 import { Button } from '@/components/ui/button';
 
@@ -28,8 +28,6 @@ const LoginPage = () => {
     const [authError, setAuthError] = useState<string | null>(null);
     const { login, isLoading: isAuthLoading, user, isInitialized } = useAuth();
     const router = useRouter();
-    const searchParams = useSearchParams();
-    const redirectTo = searchParams.get('redirectTo') || '/dashboard';
 
     useEffect(() => {
         setMounted(true);
@@ -41,12 +39,9 @@ const LoginPage = () => {
     // Redirect if already authenticated
     useEffect(() => {
         if (mounted && isInitialized && user) {
-            // Same approach here to prevent potential race conditions
-            setTimeout(() => {
-                router.push(redirectTo);
-            }, 0);
+            router.push('/dashboard');
         }
-    }, [isInitialized, user, router, redirectTo, mounted]);
+    }, [isInitialized, user, router, mounted]);
 
     const form = useForm<z.infer<typeof loginSchema>>({
         resolver: zodResolver(loginSchema),
@@ -69,11 +64,7 @@ const LoginPage = () => {
                   description: "You have successfully logged in.",
                 });
                 
-                // Use setTimeout to ensure the redirect happens after the current execution cycle
-                setTimeout(() => {
-                    console.log("Redirecting to:", redirectTo);
-                    router.push(redirectTo);
-                }, 0);
+                router.push('/dashboard');
             } else {
                 setAuthError(result.error || "Authentication failed. Please try again.");
                 toast("Authentication Error", {

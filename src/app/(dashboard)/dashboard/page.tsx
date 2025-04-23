@@ -2,6 +2,7 @@
 import { Metadata } from 'next';
 import { getExtensions } from '@/lib/api-client';
 import { ExtensionGrid } from '@/components/dashboard/extension-grid';
+import { Suspense } from 'react';
 
 export const metadata: Metadata = {
   title: 'Extensions Dashboard',
@@ -39,10 +40,12 @@ export default async function DashboardPage() {
         </div>
         
         <div className="mt-8">
-          <ExtensionGrid 
-            extensions={extensions} 
-            pagination={pagination} 
-          />
+          <Suspense fallback={<div>Loading...</div>}>
+            <ExtensionGrid 
+              extensions={extensions} 
+              pagination={pagination} 
+            />
+          </Suspense>
         </div>
       </main>
     </div>

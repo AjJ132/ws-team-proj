@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/lib/token-helper.ts
 
 /**
@@ -37,7 +38,8 @@ export function parseJwt(token: string): any {
       
       // Expiration time is in seconds, Date.now() is in milliseconds
       return payload.exp * 1000 < Date.now();
-    } catch (e) {
+    } catch (error) {
+      console.error('Error checking token expiration:', error);
       return true;
     }
   }
