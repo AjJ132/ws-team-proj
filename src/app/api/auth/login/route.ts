@@ -2,11 +2,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 // Configure your C# API base URL
-const API_BASE_URL = process.env.API_BASE_URL || 'https://your-api-url.com';
+const API_BASE_URL = typeof window === 'undefined'
+  ? process.env.NEXT_PUBLIC_API_URL || 'http://ws-project-server-env.eba-pikcxp3b.us-east-1.elasticbeanstalk.com'
+  : '/api';
+
+if (!API_BASE_URL) {
+  throw new Error('NEXT_PUBLIC_API_URL is not defined in the environment variables');
+}
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+
+    const url = new URL('/auth/login', API_BASE_URL);
+    console.log('Forwarding request to:', url.toString());
     
     // Forward the request to the C# backend
     const response = await fetch(`${API_BASE_URL}/auth/login`, {

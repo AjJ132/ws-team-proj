@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // lib/api-client.ts
-import { ApiResponse, ExtensionDto, ExtensionFilterDto, ExtensionPaginatedResponse, TagDto, ExtensionCreateDto, ExtensionUpdateDto, ExtensionVersionCreateDto, UserLoginDto, UserRegisterDto, UserTokenResponseDto, FlagCreateDto, ExtensionVersionDto } from '@/types/interfaces';
+import { ApiResponse, ExtensionDto, ExtensionFilterDto, ExtensionPaginatedResponse, TagDto, ExtensionCreateDto, ExtensionUpdateDto, ExtensionVersionCreateDto, UserLoginDto, UserRegisterDto, UserTokenResponseDto, FlagCreateDto, ExtensionVersionDto, UploaderDto } from '@/types/interfaces';
 
 // const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 const API_BASE_URL = typeof window === 'undefined'
@@ -108,12 +108,13 @@ export async function getExtensions(
 ): Promise<ApiResponse<ExtensionPaginatedResponse>> {
   const queryParams = new URLSearchParams();
   
-  if (filters.searchTerm) queryParams.append('SearchTerm', filters.searchTerm);
+  // Update parameter names to match the API endpoint format
+  if (filters.searchTerm) queryParams.append('searchterm', filters.searchTerm);
   if (filters.uploaderId) queryParams.append('UploaderId', filters.uploaderId);
   if (filters.sortBy) queryParams.append('SortBy', filters.sortBy);
   if (filters.sortDescending !== undefined) queryParams.append('SortDescending', filters.sortDescending.toString());
-  if (filters.pageNumber) queryParams.append('PageNumber', filters.pageNumber.toString());
-  if (filters.pageSize) queryParams.append('PageSize', filters.pageSize.toString());
+  if (filters.pageNumber) queryParams.append('page', filters.pageNumber.toString());
+  if (filters.pageSize) queryParams.append('pageSize', filters.pageSize.toString());
   
   // Handle TagIds array properly
   if (filters.tagIds && Array.isArray(filters.tagIds) && filters.tagIds.length > 0) {
@@ -122,7 +123,8 @@ export async function getExtensions(
     });
   }
   
-  const url = `${API_BASE_URL}/extensions?${queryParams.toString()}`;
+  // Update the endpoint URL to match your Postman example
+  const url = `${API_BASE_URL}/extensions/search?${queryParams.toString()}`;
   console.log('Fetching extensions from:', url);
   
   const response = await fetch(url, {
@@ -224,4 +226,12 @@ export async function getExtensionTags(extensionId: string): Promise<ApiResponse
     headers: getHeaders(),
   });
   return handleResponse<TagDto[]>(response);
+}
+
+// Get all uploaders
+export async function getUploaders(): Promise<ApiResponse<UploaderDto[]>> {
+  const response = await fetch(`${API_BASE_URL}/uploaders`, {
+    headers: getHeaders(),
+  });
+  return handleResponse<UploaderDto[]>(response);
 }

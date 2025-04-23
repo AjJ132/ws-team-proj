@@ -1,12 +1,19 @@
-// app/(dashboard)/dashboard/page.tsx
 "use client";
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { getExtensions } from '@/lib/api-client';
 import { ExtensionGrid } from '@/components/dashboard/extension-grid';
-import { ExtensionDto } from '@/types/interfaces';
+import { ExtensionDto, ExtensionFilterDto } from '@/types/interfaces';
 
-export default function DashboardPage() {
+// Loading component to display while data is being fetched
+function LoadingState() {
+  return <div className="flex items-center justify-center py-10">Loading...</div>;
+}
+
+// Component that uses searchParams
+function DashboardContent() {
+  const searchParams = useSearchParams();
   const [extensions, setExtensions] = useState<ExtensionDto[]>([]);
   const [pagination, setPagination] = useState({
     totalCount: 0,
@@ -21,7 +28,27 @@ export default function DashboardPage() {
   useEffect(() => {
     async function loadData() {
       try {
-        const extensionsResponse = await getExtensions();
+        // Get search parameters from URL
+        const searchTerm = searchParams.get('searchTerm') || '';
+        const uploaderId = searchParams.get('uploaderId') || '';
+        const pageNumber = parseInt(searchParams.get('pageNumber') || '1', 10);
+        const pageSize = parseInt(searchParams.get('pageSize') || '12', 10);
+        
+        // Create filter object
+        const filters: ExtensionFilterDto = {
+          searchTerm,
+          pageNumber,
+          pageSize
+        };
+        
+        // Add uploaderId to filters if present
+        if (uploaderId) {
+          filters.uploaderId = uploaderId;
+        }
+        
+        // Call API with filters
+        const extensionsResponse = await getExtensions(filters);
+        
         if (extensionsResponse.success) {
           setExtensions(extensionsResponse.data.items || []);
           setPagination({
@@ -41,8 +68,23 @@ export default function DashboardPage() {
     }
 
     loadData();
-  }, []);
+  }, [searchParams]); // Re-run when searchParams changes
 
+  return (
+    <div>
+      {loading ? (
+        <LoadingState />
+      ) : (
+        <ExtensionGrid 
+          extensions={extensions} 
+          pagination={pagination} 
+        />
+      )}
+    </div>
+  );
+}
+
+export default function DashboardPage() {
   return (
     <div className="flex flex-col min-h-screen space-y-8 py-8 bg-background">
       <main className="flex-1">
@@ -57,14 +99,9 @@ export default function DashboardPage() {
         </div>
         
         <div className="mt-8">
-          {loading ? (
-            <div>Loading...</div>
-          ) : (
-            <ExtensionGrid 
-              extensions={extensions} 
-              pagination={pagination} 
-            />
-          )}
+          <Suspense fallback={<LoadingState />}>
+            <DashboardContent />
+          </Suspense>
         </div>
       </main>
     </div>

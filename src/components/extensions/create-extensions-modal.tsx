@@ -88,7 +88,7 @@ const CreateExtensionModal: React.FC = () => {
         router.refresh();
         
         // Redirect to extension details page
-        router.push(`/dashboard/extensions/${response.data.id}`);
+        router.push(`/extensions/${response.data.id}`);
       } else {
         throw new Error(response.message || 'Failed to create extension');
       }

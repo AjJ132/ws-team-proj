@@ -18,7 +18,8 @@ import {
   TabsList,
   TabsTrigger,
 } from '@/components/ui/tabs';
-import { ChevronLeft, Edit, Download } from 'lucide-react';
+import { ChevronLeft, Download } from 'lucide-react';
+import EditExtensionModal from '@/components/extensions/edit-extension/edit-extension-modal';
 
 
 type Props = {
@@ -80,12 +81,7 @@ export default async function ExtensionDetailPage({ params }: Props) {
                 <span>By {extension.uploader?.user?.username || 'Unknown'}</span>
               </div>
             </div>
-            <Button asChild>
-              <Link href={`/dashboard/extensions/${extension.id}/edit`}>
-                <Edit className="mr-2 h-4 w-4" />
-                Edit
-              </Link>
-            </Button>
+            <EditExtensionModal extensionId={extension.id} />
           </div>
 
           <div className="flex flex-wrap gap-2 mb-6">
@@ -262,11 +258,7 @@ export default async function ExtensionDetailPage({ params }: Props) {
               <CardTitle>Actions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              <Button className="w-full" asChild>
-                <Link href={`/dashboard/extensions/${extension.id}/versions/create`}>
-                  Add New Version
-                </Link>
-              </Button>
+              
               
               {sortedVersions.length > 0 && (
                 <Button variant="outline" className="w-full">

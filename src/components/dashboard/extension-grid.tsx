@@ -1,7 +1,7 @@
-// app/dashboard/components/extension-grid.tsx
+/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Pagination,
@@ -14,10 +14,19 @@ import {
 } from '@/components/ui/pagination';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ExtensionDto, } from '@/types/interfaces';
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { ExtensionDto, UploaderDto } from '@/types/interfaces';
 import Link from 'next/link';
 import { SearchIcon } from 'lucide-react';
 import { ExtensionCard } from '../extensions/extension-card';
+
+
 
 interface ExtensionGridProps {
   extensions: ExtensionDto[];
@@ -35,6 +44,34 @@ export function ExtensionGrid({ extensions, pagination }: ExtensionGridProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [searchTerm, setSearchTerm] = useState(searchParams.get('searchTerm') || '');
+  const [selectedUploaderId, setSelectedUploaderId] = useState(searchParams.get('uploaderId') || '');
+  const [uploaders, setUploaders] = useState<UploaderDto[]>([]);
+  console.log('Uploaders:', uploaders);
+  const [isLoadingUploaders, setIsLoadingUploaders] = useState(false);
+
+  // Fetch uploaders when component mounts
+  useEffect(() => {
+    async function fetchUploaders() {
+      setIsLoadingUploaders(true);
+      try {
+        const response = await fetch('/api/uploaders');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.data) {
+            setUploaders(data.data);
+          }
+        } else {
+          console.error('Failed to fetch uploaders');
+        }
+      } catch (error) {
+        console.error('Error fetching uploaders:', error);
+      } finally {
+        setIsLoadingUploaders(false);
+      }
+    }
+
+    fetchUploaders();
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,6 +81,37 @@ export function ExtensionGrid({ extensions, pagination }: ExtensionGridProps) {
       params.set('searchTerm', searchTerm);
     } else {
       params.delete('searchTerm');
+    }
+    
+    // Add uploader ID to query params if selected
+    if (selectedUploaderId) {
+      params.set('uploaderId', selectedUploaderId);
+    } else {
+      params.delete('uploaderId');
+    }
+    
+    params.set('pageNumber', '1');
+    router.push(`/dashboard?${params.toString()}`);
+  };
+
+  const handleUploaderChange = (value: string) => {
+    // Handle 'all' value as empty string for the API
+    const uploaderId = value === 'all' ? '' : value;
+    setSelectedUploaderId(uploaderId);
+    
+    // Trigger search immediately when an uploader is selected
+    const params = new URLSearchParams(searchParams.toString());
+    
+    if (searchTerm) {
+      params.set('searchTerm', searchTerm);
+    } else {
+      params.delete('searchTerm');
+    }
+    
+    if (uploaderId) {
+      params.set('uploaderId', uploaderId);
+    } else {
+      params.delete('uploaderId');
     }
     
     params.set('pageNumber', '1');
@@ -70,6 +138,22 @@ export function ExtensionGrid({ extensions, pagination }: ExtensionGridProps) {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
+          
+          {/* Uploader Select Dropdown */}
+          <Select value={selectedUploaderId} onValueChange={handleUploaderChange}>
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Filter by uploader" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All uploaders</SelectItem>
+              {uploaders.map((uploader) => (
+                <SelectItem key={uploader.userId} value={uploader.userId}>
+                  {uploader.user.username}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          
           <Button type="submit">Search</Button>
         </form>
       </div>

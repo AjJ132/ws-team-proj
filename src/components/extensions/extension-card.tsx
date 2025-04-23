@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ExtensionDto } from '@/types/interfaces';
 import Link from 'next/link';
+import EditExtensionModal from './edit-extension/edit-extension-modal';
 
 interface ExtensionCardProps {
   extension: ExtensionDto;
@@ -45,15 +46,11 @@ export function ExtensionCard({ extension }: ExtensionCardProps) {
         </div>
         <div className="flex justify-between w-full mt-2">
           <Button variant="outline" size="sm" asChild>
-            <Link href={`/dashboard/extensions/${extension.id}`}>
+            <Link href={`/extensions/${extension.id}`}>
               View Details
             </Link>
           </Button>
-          <Button variant="default" size="sm" asChild>
-            <Link href={`/dashboard/extensions/${extension.id}/edit`}>
-              Edit
-            </Link>
-          </Button>
+          <EditExtensionModal extensionId={extension.id} />
         </div>
       </CardFooter>
     </Card>
