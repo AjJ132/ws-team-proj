@@ -3,7 +3,9 @@
 import { ApiResponse, ExtensionDto, ExtensionFilterDto, ExtensionPaginatedResponse, TagDto, ExtensionCreateDto, ExtensionUpdateDto, ExtensionVersionCreateDto, UserLoginDto, UserRegisterDto, UserTokenResponseDto, FlagCreateDto, ExtensionVersionDto } from '@/types/interfaces';
 
 // const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
-const API_BASE_URL = '/api';
+const API_BASE_URL = typeof window === 'undefined'
+  ? process.env.NEXT_PUBLIC_API_URL || 'http://ws-project-server-env.eba-pikcxp3b.us-east-1.elasticbeanstalk.com'
+  : '/api';
 
 if (!API_BASE_URL) {
   throw new Error('NEXT_PUBLIC_API_URL is not defined in the environment variables');

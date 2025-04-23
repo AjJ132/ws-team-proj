@@ -1,33 +1,50 @@
-// app/dashboard/page.tsx
-import { Metadata } from 'next';
+// app/(dashboard)/dashboard/page.tsx
+"use client";
+
+import { useEffect, useState } from 'react';
 import { getExtensions } from '@/lib/api-client';
 import { ExtensionGrid } from '@/components/dashboard/extension-grid';
-import { Suspense } from 'react';
+import { ExtensionDto } from '@/types/interfaces';
 
-export const metadata: Metadata = {
-  title: 'Extensions Dashboard',
-  description: 'Browse and manage extensions',
-};
+export default function DashboardPage() {
+  const [extensions, setExtensions] = useState<ExtensionDto[]>([]);
+  const [pagination, setPagination] = useState({
+    totalCount: 0,
+    pageNumber: 1,
+    pageSize: 12,
+    totalPages: 0,
+    hasNextPage: false,
+    hasPreviousPage: false,
+  });
+  const [loading, setLoading] = useState(true);
 
-export default async function DashboardPage() {
-  // Fetch extensions and tags server-side
-  const [extensionsResponse] = await Promise.all([
-    getExtensions(),
-  ]);
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const extensionsResponse = await getExtensions();
+        if (extensionsResponse.success) {
+          setExtensions(extensionsResponse.data.items || []);
+          setPagination({
+            totalCount: extensionsResponse.data.totalCount,
+            pageNumber: extensionsResponse.data.pageNumber,
+            pageSize: extensionsResponse.data.pageSize,
+            totalPages: extensionsResponse.data.totalPages,
+            hasNextPage: extensionsResponse.data.hasNextPage,
+            hasPreviousPage: extensionsResponse.data.hasPreviousPage,
+          });
+        }
+      } catch (error) {
+        console.error('Error loading data:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
 
-  const extensions = extensionsResponse.data.items || [];
-  const pagination = {
-    totalCount: extensionsResponse.data.totalCount,
-    pageNumber: extensionsResponse.data.pageNumber,
-    pageSize: extensionsResponse.data.pageSize,
-    totalPages: extensionsResponse.data.totalPages,
-    hasNextPage: extensionsResponse.data.hasNextPage,
-    hasPreviousPage: extensionsResponse.data.hasPreviousPage,
-  };
+    loadData();
+  }, []);
 
   return (
     <div className="flex flex-col min-h-screen space-y-8 py-8 bg-background">
-      
       <main className="flex-1">
         <div className="flex flex-col space-y-4">
           <h1 className="text-3xl font-bold tracking-tight">Extensions</h1>
@@ -40,12 +57,14 @@ export default async function DashboardPage() {
         </div>
         
         <div className="mt-8">
-          <Suspense fallback={<div>Loading...</div>}>
+          {loading ? (
+            <div>Loading...</div>
+          ) : (
             <ExtensionGrid 
               extensions={extensions} 
               pagination={pagination} 
             />
-          </Suspense>
+          )}
         </div>
       </main>
     </div>
